@@ -16,8 +16,12 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     var imageView: UIImageView!
     
+   
+    
     let imagePicker = UIImagePickerController()
     let imagePicker2 = UIImagePickerController()
+    
+    
     
     override func loadView() {
         view = UIView()
@@ -139,12 +143,22 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             
             print(firstResult.identifier)
             print(firstResult.confidence)
+                let word = firstResult.identifier
+                var newWord = ""
+                for letter in word {
+                    if letter == "," {
+                        break
+                    } else {
+                        newWord.append(letter)
+                    }
+                }
+                
 //                self.firstResultKP = firstResult.identifier
-                self.answerNameLabel.text = firstResult.identifier
+                self.answerNameLabel.text = newWord.capitalizingFirstLetter()
                 
                 let firstAnswerInPercentMyltiplyBy100 = 100 * firstResult.confidence
                 let firstAnswerInPercentMultiplyBy100String = String(format: "%.2f", firstAnswerInPercentMyltiplyBy100)
-                self.answerPercentLabel.text = "Wynik: \(firstAnswerInPercentMultiplyBy100String)%"
+                self.answerPercentLabel.text = "Chance: \(firstAnswerInPercentMultiplyBy100String)%"
                
                 self.answerNameLabel.isHidden = false
                 self.answerPercentLabel.isHidden = false
@@ -185,19 +199,18 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         
     }
     
-    func screenShot() -> UIImage
-        {
+    func screenShot() -> UIImage {
+        
             let layer = self.view.layer
             let scale = UIScreen.main.scale
             UIGraphicsBeginImageContextWithOptions(layer.frame.size, false, scale);
 
             layer.render(in: UIGraphicsGetCurrentContext()!)
-            let screenshot = UIGraphicsGetImageFromCurrentImageContext()
+            guard let screenshot = UIGraphicsGetImageFromCurrentImageContext() else { return imageView.image! }
             UIGraphicsEndImageContext()
 
-            return screenshot!
-        }
-
+            return screenshot
+    }
     
     
     func updateBar() {
@@ -205,23 +218,29 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         let spacer = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         
         let shareButton = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareTapped))
-        
         let cameraButton = UIBarButtonItem(barButtonSystemItem: .camera, target: self, action: #selector(cameraPressed))
         
-        let photoLibraryButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addFromPhotoLibrary))
+        let photoLibraryIcon = UIImage(systemName: "photo.on.rectangle")
+        let photoLibraryButton = UIBarButtonItem(image: photoLibraryIcon, style: .plain, target: self, action: #selector(addFromPhotoLibrary))
       
         toolbarItems = [photoLibraryButton, spacer, cameraButton, spacer,shareButton]
         navigationController?.isToolbarHidden = false
 //        text1.isEnabled = false
+        // photo.on.rectangle
         
     }
-    
-    
-    
 
 }
 
+extension String {
+    func capitalizingFirstLetter() -> String {
+        return prefix(1).capitalized + dropFirst()
+    }
 
+    mutating func capitalizeFirstLetter() {
+        self = self.capitalizingFirstLetter()
+    }
+}
 
 
 
