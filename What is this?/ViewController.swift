@@ -222,15 +222,40 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         
         let photoLibraryIcon = UIImage(systemName: "photo.on.rectangle")
         let photoLibraryButton = UIBarButtonItem(image: photoLibraryIcon, style: .plain, target: self, action: #selector(addFromPhotoLibrary))
+        
+        let saveIcon = UIBarButtonItem(barButtonSystemItem: .save, target: self, action: #selector(save))
+        
       
-        toolbarItems = [photoLibraryButton, spacer, cameraButton, spacer,shareButton]
+        toolbarItems = [photoLibraryButton, spacer, cameraButton, spacer, shareButton, spacer, saveIcon]
         navigationController?.isToolbarHidden = false
 //        text1.isEnabled = false
         // photo.on.rectangle
         
     }
-
+    
+    @objc func save() {
+        
+        let image = screenShot()
+        UIImageWriteToSavedPhotosAlbum(image, self, #selector(image(_:didFinishSavingWithError:contextInfo:)), nil)
+    }
+    
+    @objc func image(_ image: UIImage, didFinishSavingWithError error: Error?, contextInfo: UnsafeRawPointer) {
+        if let error = error {
+            let ac = UIAlertController(title: "Save error", message: error.localizedDescription, preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "OK", style: .default))
+            present(ac, animated: true)
+        } else {
+            let ac = UIAlertController(title: "Saved!", message: "Your image has been saved to your photos.", preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "OK", style: .default))
+            present(ac, animated: true)
+        }
+    }
+    
+    
+    
 }
+
+
 
 extension String {
     func capitalizingFirstLetter() -> String {
