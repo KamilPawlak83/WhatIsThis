@@ -13,14 +13,15 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     
     var answerNameLabel: UILabel!
     var answerPercentLabel: UILabel!
-    
     var imageView: UIImageView!
-    
-   
     
     let imagePicker = UIImagePickerController()
     let imagePicker2 = UIImagePickerController()
     
+    var shareButton = UIBarButtonItem()
+    var saveIcon = UIBarButtonItem()
+    
+    var photoHanBeenChosen = false
     
     
     override func loadView() {
@@ -36,7 +37,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         answerNameLabel.font = UIFont.systemFont(ofSize: 24)
         answerNameLabel.textAlignment = .center
         answerNameLabel.text = "Name"
-        answerNameLabel.backgroundColor = UIColor.systemPurple
+        answerNameLabel.backgroundColor = UIColor.systemIndigo
         answerNameLabel.layer.masksToBounds = true
         answerNameLabel.layer.cornerRadius = 8
         answerNameLabel.layer.borderWidth = 1
@@ -65,12 +66,12 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             
             answerNameLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             answerNameLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
-            answerNameLabel.bottomAnchor.constraint(equalTo: answerPercentLabel.topAnchor, constant: -20),
+            answerNameLabel.bottomAnchor.constraint(equalTo: answerPercentLabel.topAnchor, constant: -10),
             answerNameLabel.heightAnchor.constraint(equalToConstant: 30),
            
             answerPercentLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             answerPercentLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
-            answerPercentLabel.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor, constant: -20),
+            answerPercentLabel.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor, constant: -40),
             answerPercentLabel.heightAnchor.constraint(equalToConstant: 30),
             
             imageView.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor),
@@ -83,23 +84,16 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
         
         imagePicker.delegate = self
-        
         imagePicker.sourceType = .camera // we can use photo library: .photoLibrary or camera: .camera
-        imagePicker.allowsEditing = false // do sprawdzenia pozniej
-        
-//        WynikSlowny.isHidden = true
-//        Procenty.isHidden = true
-        
+        imagePicker.allowsEditing = false
+    
         present(imagePicker, animated: true, completion: updateBar)
         
         imagePicker2.delegate = self
         imagePicker2.sourceType = .photoLibrary
         imagePicker2.allowsEditing = false
-        
-      
         
     }
     
@@ -111,7 +105,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             guard let ciimage = CIImage(image: userPickedImage) else {
                 fatalError("CIImage error")
             }
-        
+            photoHanBeenChosen = true
             detect(image: ciimage)
         
         }
@@ -119,7 +113,10 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         imagePicker.dismiss(animated: true, completion: nil)
         imagePicker2.dismiss(animated: true, completion: nil)
         
+        
         updateBar()
+        saveIcon.isEnabled = true
+        shareButton.isEnabled = true
         
     }
     
@@ -139,7 +136,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         print(results)
         
             if let firstResult = results.first {
-                self.navigationItem.title = firstResult.identifier
+                
             
             print(firstResult.identifier)
             print(firstResult.confidence)
@@ -157,8 +154,19 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                 self.answerNameLabel.text = newWord.capitalizingFirstLetter()
                 
                 let firstAnswerInPercentMyltiplyBy100 = 100 * firstResult.confidence
-                let firstAnswerInPercentMultiplyBy100String = String(format: "%.2f", firstAnswerInPercentMyltiplyBy100)
+                let firstAnswerInPercentMultiplyBy100String = String(format: "%.1f", firstAnswerInPercentMyltiplyBy100)
                 self.answerPercentLabel.text = "Chance: \(firstAnswerInPercentMultiplyBy100String)%"
+                
+                switch firstAnswerInPercentMyltiplyBy100 {
+                case 0..<33:
+                    self.answerPercentLabel.backgroundColor = UIColor.systemRed
+                case 33..<66:
+                    self.answerPercentLabel.backgroundColor = UIColor.systemPurple
+                case 66...100:
+                    self.answerPercentLabel.backgroundColor = UIColor.systemGreen
+                default:
+                    self.answerPercentLabel.backgroundColor = UIColor.systemIndigo
+                }
                
                 self.answerNameLabel.isHidden = false
                 self.answerPercentLabel.isHidden = false
@@ -217,20 +225,24 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         
         let spacer = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         
-        let shareButton = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareTapped))
+        shareButton = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareTapped))
+        saveIcon = UIBarButtonItem(barButtonSystemItem: .save, target: self, action: #selector(save))
+        
         let cameraButton = UIBarButtonItem(barButtonSystemItem: .camera, target: self, action: #selector(cameraPressed))
         
         let photoLibraryIcon = UIImage(systemName: "photo.on.rectangle")
         let photoLibraryButton = UIBarButtonItem(image: photoLibraryIcon, style: .plain, target: self, action: #selector(addFromPhotoLibrary))
         
-        let saveIcon = UIBarButtonItem(barButtonSystemItem: .save, target: self, action: #selector(save))
-        
       
         toolbarItems = [photoLibraryButton, spacer, cameraButton, spacer, shareButton, spacer, saveIcon]
         navigationController?.isToolbarHidden = false
-//        text1.isEnabled = false
-        // photo.on.rectangle
         
+        self.navigationItem.title = "What is This?"
+        
+        if photoHanBeenChosen == false {
+        saveIcon.isEnabled = false
+        shareButton.isEnabled = false
+        }
     }
     
     @objc func save() {
