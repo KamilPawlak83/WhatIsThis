@@ -31,6 +31,12 @@ https://developer.apple.com/machine-learning/models/
  
 ### UI
 
-* To Do
+##### App Main View:
+![AppView](https://user-images.githubusercontent.com/73897166/133451466-744ca3c3-3e96-46f8-836b-dc8203bcfedf.png)
+
+
+##### Two examples of result:
+
+
 
 
