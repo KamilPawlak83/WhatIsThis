@@ -36,7 +36,8 @@ https://developer.apple.com/machine-learning/models/
 
 
 ##### Two examples of result:
-
+![BallPen](https://user-images.githubusercontent.com/73897166/133452663-e4574da8-a530-4b1d-9104-0a59acf98c7a.png)
+![Coffee](https://user-images.githubusercontent.com/73897166/133452668-839c33e1-e4fc-4bdf-8c0d-9952d30db6b7.png)
 
 
 
