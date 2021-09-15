@@ -14,15 +14,11 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     var answerNameLabel: UILabel!
     var answerPercentLabel: UILabel!
     var imageView: UIImageView!
-    
-    let imagePicker = UIImagePickerController()
-    let imagePicker2 = UIImagePickerController()
-    
     var shareButton = UIBarButtonItem()
     var saveIcon = UIBarButtonItem()
-    
     var photoHanBeenChosen = false
-    
+    let imagePicker = UIImagePickerController()
+    let imagePicker2 = UIImagePickerController()
     
     override func loadView() {
         view = UIView()
@@ -30,7 +26,6 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(imageView)
-        
         
         answerNameLabel = UILabel()
         answerNameLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -42,10 +37,8 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         answerNameLabel.layer.cornerRadius = 8
         answerNameLabel.layer.borderWidth = 1
         answerNameLabel.layer.borderColor = UIColor.black.cgColor
-        
         answerNameLabel.isHidden = true
         view.addSubview(answerNameLabel)
-        
         
         answerPercentLabel = UILabel()
         answerPercentLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -57,18 +50,16 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         answerPercentLabel.layer.cornerRadius = 8
         answerPercentLabel.layer.borderWidth = 1
         answerPercentLabel.layer.borderColor = UIColor.black.cgColor
-        
         answerPercentLabel.isHidden = true
         view.addSubview(answerPercentLabel)
         
-       
         NSLayoutConstraint.activate([
             
             answerNameLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             answerNameLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
             answerNameLabel.bottomAnchor.constraint(equalTo: answerPercentLabel.topAnchor, constant: -10),
             answerNameLabel.heightAnchor.constraint(equalToConstant: 30),
-           
+            
             answerPercentLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             answerPercentLabel.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.8),
             answerPercentLabel.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor, constant: -40),
@@ -79,67 +70,51 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             imageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             imageView.leadingAnchor.constraint(equalTo: view.leadingAnchor)
         ])
-        
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         imagePicker.delegate = self
         imagePicker.sourceType = .camera // we can use photo library: .photoLibrary or camera: .camera
         imagePicker.allowsEditing = false
-    
         present(imagePicker, animated: true, completion: updateBar)
-        
         imagePicker2.delegate = self
         imagePicker2.sourceType = .photoLibrary
         imagePicker2.allowsEditing = false
-        
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         
         if let userPickedImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
             imageView.image = userPickedImage
-     
+            
             guard let ciimage = CIImage(image: userPickedImage) else {
                 fatalError("CIImage error")
             }
             photoHanBeenChosen = true
             detect(image: ciimage)
-        
         }
-        
         imagePicker.dismiss(animated: true, completion: nil)
         imagePicker2.dismiss(animated: true, completion: nil)
-        
-        
         updateBar()
         saveIcon.isEnabled = true
         shareButton.isEnabled = true
-        
     }
     
-    
     func detect(image: CIImage) {
-        
         let config = MLModelConfiguration()
         guard let model = try? VNCoreMLModel(for: Resnet50(configuration: config).model) else {
             fatalError("Couldn't create Resnet50 Model")
         }
-
+        
         let request = VNCoreMLRequest(model: model) { request, error in
             guard let results = request.results as? [VNClassificationObservation] else {
                 fatalError("Image request error")
-        }
+            }
             
-        print(results)
-        
             if let firstResult = results.first {
-                
-            
-            print(firstResult.identifier)
-            print(firstResult.confidence)
+                print(firstResult.identifier)
+                print(firstResult.confidence)
                 let word = firstResult.identifier
                 var newWord = ""
                 for letter in word {
@@ -150,7 +125,6 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                     }
                 }
                 
-//                self.firstResultKP = firstResult.identifier
                 self.answerNameLabel.text = newWord.capitalizingFirstLetter()
                 
                 let firstAnswerInPercentMyltiplyBy100 = 100 * firstResult.confidence
@@ -167,14 +141,12 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                 default:
                     self.answerPercentLabel.backgroundColor = UIColor.systemIndigo
                 }
-               
                 self.answerNameLabel.isHidden = false
                 self.answerPercentLabel.isHidden = false
-           
             }
         }
         
-    let handler = VNImageRequestHandler(ciImage: image)
+        let handler = VNImageRequestHandler(ciImage: image)
         
         do {
             try handler.perform([request])
@@ -183,70 +155,55 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         }
     }
     
-
-   
     @objc func cameraPressed() {
         navigationController?.isToolbarHidden = true
         present(imagePicker, animated: true, completion: updateBar)
     }
     
-   
     @objc func addFromPhotoLibrary() {
         navigationController?.isToolbarHidden = true
         present(imagePicker2, animated: true, completion: updateBar)
-        
     }
     
     @objc func shareTapped() {
-    
+        
         let image = screenShot()
         let vc = UIActivityViewController(activityItems: [image], applicationActivities: [])
-        
         vc.popoverPresentationController?.barButtonItem = navigationItem.leftBarButtonItem
         present(vc, animated: true)
-        
     }
     
     func screenShot() -> UIImage {
-        
-            let layer = self.view.layer
-            let scale = UIScreen.main.scale
-            UIGraphicsBeginImageContextWithOptions(layer.frame.size, false, scale);
-
-            layer.render(in: UIGraphicsGetCurrentContext()!)
-            guard let screenshot = UIGraphicsGetImageFromCurrentImageContext() else { return imageView.image! }
-            UIGraphicsEndImageContext()
-
-            return screenshot
+        let layer = self.view.layer
+        let scale = UIScreen.main.scale
+        UIGraphicsBeginImageContextWithOptions(layer.frame.size, false, scale);
+        layer.render(in: UIGraphicsGetCurrentContext()!)
+        guard let screenshot = UIGraphicsGetImageFromCurrentImageContext() else { return imageView.image! }
+        UIGraphicsEndImageContext()
+        return screenshot
     }
     
-    
     func updateBar() {
-        
         let spacer = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        
         shareButton = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareTapped))
         saveIcon = UIBarButtonItem(barButtonSystemItem: .save, target: self, action: #selector(save))
         
         let cameraButton = UIBarButtonItem(barButtonSystemItem: .camera, target: self, action: #selector(cameraPressed))
-        
         let photoLibraryIcon = UIImage(systemName: "photo.on.rectangle")
         let photoLibraryButton = UIBarButtonItem(image: photoLibraryIcon, style: .plain, target: self, action: #selector(addFromPhotoLibrary))
         
-      
         toolbarItems = [photoLibraryButton, spacer, cameraButton, spacer, shareButton, spacer, saveIcon]
         navigationController?.isToolbarHidden = false
         
         self.navigationItem.title = "What is This?"
         
         if photoHanBeenChosen == false {
-        saveIcon.isEnabled = false
-        shareButton.isEnabled = false
+            saveIcon.isEnabled = false
+            shareButton.isEnabled = false
         }
     }
     
     @objc func save() {
-        
         let image = screenShot()
         UIImageWriteToSavedPhotosAlbum(image, self, #selector(image(_:didFinishSavingWithError:contextInfo:)), nil)
     }
@@ -262,18 +219,12 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             present(ac, animated: true)
         }
     }
-    
-    
-    
 }
-
-
 
 extension String {
     func capitalizingFirstLetter() -> String {
         return prefix(1).capitalized + dropFirst()
     }
-
     mutating func capitalizeFirstLetter() {
         self = self.capitalizingFirstLetter()
     }
