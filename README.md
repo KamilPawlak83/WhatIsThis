@@ -27,6 +27,7 @@ https://developer.apple.com/machine-learning/models/
 * String estension 
 * How to handle with toolbar and spacer
 * How to create views in code using loadView() and NSLayoutConstraint
+* how to add photoLibraryIcon using UIImage(systemName: "photo.on.rectangle") or any other "custom" icon
 * and How we can cope with @objc func funcName()
  
 ### UI
