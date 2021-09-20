@@ -1,6 +1,6 @@
-# WhatIsThis? App
+# WhatIsThis?
 
-### App Description
+### Project Description
 This app show us how simple we can get acces to Machine Learning using the CoreML
 Firstly You cen get any photo from your photo library or You can take a new one.
 When You have a photo You can check - what is this?
