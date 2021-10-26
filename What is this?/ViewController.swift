@@ -177,7 +177,8 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         let layer = self.view.layer
         let scale = UIScreen.main.scale
         UIGraphicsBeginImageContextWithOptions(layer.frame.size, false, scale);
-        layer.render(in: UIGraphicsGetCurrentContext()!)
+        guard let safeContext = UIGraphicsGetCurrentContext() else {return imageView.image!}
+        layer.render(in: safeContext)
         guard let screenshot = UIGraphicsGetImageFromCurrentImageContext() else { return imageView.image! }
         UIGraphicsEndImageContext()
         return screenshot
